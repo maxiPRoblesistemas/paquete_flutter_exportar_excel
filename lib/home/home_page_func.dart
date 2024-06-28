@@ -7,6 +7,9 @@ List<String> extractHeadersFromSchema(
     });
     for (int i = 0; i < listaEncabezados.length; i++) {
       sheet.getRangeByIndex(1, i + 1).setText(listaEncabezados[i]);
+
+      sheet.getRangeByIndex(1, i + 1).cellStyle.bold = true;
+
       /// Ajuste personalizado del ancho de las columnas
       // sheet.setColumnWidthInPixels(i + 1, 150);
 
