@@ -12,11 +12,14 @@ class ExportarDatosToExcel extends StatefulWidget {
 }
 
 class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
-  //Lista de datos
-  List<Map<String, dynamic>> dataList = Results.dataList;
+  // Esquemas de datos
+  Map<String, dynamic> schema = Results().esquema;
 
-  //Lista de encabezados
-  List<String> columnasObligatorias = Results.columnasObligatorias;
+  // Lista de encabezados
+  List<String> listaEncabezados = [];
+
+  // Lista de datos
+  List<Map<String, dynamic>> listData = Results().datos;
 
   // Nombre del archivo
   String fileName = "archivo_excel_prueba";
@@ -44,34 +47,61 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
   FilledButton _buildExportButton() {
     return FilledButton(
         child: const Text('Exportar'),
-        onPressed: () => generaArchivoExcel(dataList, fileName));
+        onPressed: () => generaArchivoExcel(listData, fileName));
   }
 
-  void cargarColumnas(Worksheet sheet) {
-    for (int i = 0; i < columnasObligatorias.length; i++) {
-      sheet.getRangeByIndex(1, i + 1).setText(columnasObligatorias[i]);
-      sheet.workbook.fonts = [
-        Font()
-          ..name = 'Arial'
-          ..bold = true
-          ..size = 12
-      ];
+  List<String> extractHeadersFromSchema(
+      Map<String, dynamic> schema, Worksheet sheet) {
+    schema['properties'].forEach((key, value) {
+      listaEncabezados.add(value['label'] ?? key);
+    });
+    for (int i = 0; i < listaEncabezados.length; i++) {
+      sheet.getRangeByIndex(1, i + 1).setText(listaEncabezados[i]);
+      /// Ajuste personalizado del ancho de las columnas
+      // sheet.setColumnWidthInPixels(i + 1, 150);
+
+      /// Ajuste personalizado del ancho de las filas
+      // sheet.setRowHeightInPixels(1, 20);
+
+      /// Ajuste automático del ancho de las columnas
       sheet.autoFitColumn(i + 1);
+
+      /// Ajuste automático del ancho de las filas
+      sheet.autoFitRow(i + 1);
     }
+    return listaEncabezados;
   }
 
-  void cargaDatosFilas(List<Map<String, dynamic>> data,
-      List<String> columnasObligatorias, Worksheet sheet) {
+  void extractDataFromSchema(Map<String, dynamic> schema,
+      List<Map<String, dynamic>> data, Worksheet sheet) {
+    List<String> keys = [];
+    schema['properties'].forEach((key, value) {
+      keys.add(key);
+    });
+    _cargaRowData(data, sheet, keys);
+  }
+
+  /// Esta función se encarga de cargar los datos en una hoja de cálculo de Excel.
+  ///
+  /// Parámetros:
+  /// - [data]: Una lista de mapas que contiene los datos a exportar.
+  /// - [sheet]: La hoja de cálculo de Excel donde se escribirán los datos.
+  /// - [keys]: Una lista de claves que define las columnas de datos a exportar.
+  void _cargaRowData(
+      List<Map<String, dynamic>> data, Worksheet sheet, List<String> keys) {
+    // Iterar a través de cada fila de datos en la lista `data`.
     for (int i = 0; i < data.length; i++) {
+      // Obtener el mapa que representa la fila actual de datos.
       var row = data[i];
-      for (int j = 0; j < columnasObligatorias.length; j++) {
-        var value = row[columnasObligatorias[j]];
+      // Iterar a través de cada clave en la lista `keys` para obtener los valores correspondientes.
+      for (int j = 0; j < keys.length; j++) {
+        // Obtener el valor correspondiente a la clave actual en la fila de datos.
+        var value = row[keys[j]];
+        // Verificar el tipo de dato del valor y asignarlo a la celda correspondiente en la hoja de cálculo.
         if (value is String) {
           sheet.getRangeByIndex(i + 2, j + 1).setText(value);
         } else if (value is int) {
           sheet.getRangeByIndex(i + 2, j + 1).setNumber(value.toDouble());
-        } else if (value is double) {
-          sheet.getRangeByIndex(i + 2, j + 1).setNumber(value);
         } else {
           sheet.getRangeByIndex(i + 2, j + 1).setText(value.toString());
         }
@@ -86,11 +116,11 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
     final Worksheet sheet = workbook.worksheets[0];
 
     // Agragar encabezados
-    cargarColumnas(sheet);
+    extractHeadersFromSchema(schema, sheet);
 
     // Agregar datos
-    cargaDatosFilas(data, columnasObligatorias, sheet);
-
+    extractDataFromSchema(schema, data, sheet);
+    
     // Guardar el archivo
     final List<int> bytes = workbook.saveAsStream();
     workbook.dispose();

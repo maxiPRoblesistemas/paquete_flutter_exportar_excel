@@ -1,48 +1,68 @@
 class Results {
-  static const List<String> columnasObligatorias = [
-    'nombre',
-    'apellido',
-    'email',
-    'localidad',
-    'domicilio',
-  ];
+  Map<String, dynamic> esquema = {
+  "type": "object",
+  "properties": {
+    "idPais": {
+      "type": "string",
+      "required": true,
+      "label": "Pais",
+      "dynamicListValue": {
+        "coleccion": "pais",
+        "campoVisualizacion": ["nombre", "apellido"],
+        "valoresDeFiltrado": {"A": "Activo", "B": "Bloqueado"}
+      },
+    },
+    "descripcion": {
+      "type": "string",
+      "required": true,
+      "label": "Descripcion",
+    },
+    "latitud": {
+      "type": "string",
+      "required": false,
+    },
+    "longitud": {
+      "type": "string",
+      "required": false,
+    },
+    "codigoAfip": {
+      "type": "number",
+      "required": true,
+      "label": "Codigo Afip",
+    },
+    "creadoEl": {
+      "type": "string",
+      "required": false,
+      "label": "Fecha modificacion",
+    }
+  },
+  "required": true
+};
 
-  static const List<Map<String, dynamic>> dataList = [
-    {
-      'nombre': 'Anna',
-      'apellido': 'Castela',
-      'email': 'anna_castela_cantora@test.com',
-      'dataDireccion': {
-        'localidad': 'Eldorado',
-        'domicilio': 'Calle 1',
-      }
-    },
-    {
-      'nombre': 'Jose',
-      'apellido': 'Balanta',
-      'email': 'jose@test.com',
-      'dataDireccion': {
-        'localidad': 'Posadas',
-        'domicilio': 'Calle 152',
-      }
-    },
-    {
-      'nombre': 'Alberto',
-      'apellido': 'Alvarado',
-      'email': 'albert@test.com',
-      'dataDireccion': {
-        'localidad': 'Puerto Rico',
-        'domicilio': 'Calle 144',
-      }
-    },
-    {
-      'nombre': 'Homero',
-      'apellido': 'Simpson',
-      'email': 'homer@test.com',
-      'dataDireccion': {
-        'localidad': 'Springfield',
-        'domicilio': 'Av. siempre vivas 745',
-      }
-    },
-  ];
+List<Map<String, dynamic>> datos = [
+  {
+    "idPais": "ARG",
+    "descripcion": "Argentina",
+    "latitud": "-34.6037",
+    "longitud": "-58.3816",
+    "codigoAfip": 12345,
+    "creadoEl": "2024-06-01"
+  },
+  {
+    "idPais": "BRA",
+    "descripcion": "Brasil",
+    "latitud": "-15.8267",
+    "longitud": "-47.9218",
+    "codigoAfip": 67890,
+    "creadoEl": "2024-06-02"
+  },
+  {
+    "idPais": "PRY",
+    "descripcion": "Paraguay",
+    "latitud": "-15.8263",
+    "longitud": "-47.9222",
+    "codigoAfip": 64158,
+    "creadoEl": "2024-06-28"
+  }
+];
 }
