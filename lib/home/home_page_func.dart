@@ -1,82 +1,92 @@
 part of 'home_page.dart';
 
 List<String> extractHeadersFromSchema(
-      Map<String, dynamic> schema, Worksheet sheet, List<String> listaEncabezados) {
-    schema['properties'].forEach((key, value) {
-      listaEncabezados.add(value['label'] ?? key);
-    });
-    for (int i = 0; i < listaEncabezados.length; i++) {
-      sheet.getRangeByIndex(1, i + 1).setText(listaEncabezados[i]);
+    {required Map<String, dynamic> schema,
+    required Worksheet sheet,
+    required List<String> listaEncabezados,
+    required Workbook workbook}) {
+  schema['properties'].forEach((key, value) {
+    listaEncabezados.add(value['label'] ?? key);
+  });
+  for (int i = 0; i < listaEncabezados.length; i++) {
+    sheet.getRangeByIndex(1, i + 1).setValue(listaEncabezados[i]);
 
-      sheet.getRangeByIndex(1, i + 1).cellStyle.bold = true;
+    sheet.getRangeByIndex(1, i + 1).cellStyle.bold = true;
+    sheet.getRangeByIndex(1, i + 1).cellStyle.fontSize = 14;
+    sheet.getRangeByIndex(1, i + 1).cellStyle.fontName = 'Times New Roman';
 
-      /// Ajuste personalizado del ancho de las columnas
-      // sheet.setColumnWidthInPixels(i + 1, 150);
+    /// Ajuste automático del ancho de las columnas
+    sheet.autoFitColumn(i + 1);
 
-      /// Ajuste personalizado del ancho de las filas
-      // sheet.setRowHeightInPixels(1, 20);
+    /// Ajuste automático del ancho de las filas
+    sheet.autoFitRow(i + 1);
+  }
+  return listaEncabezados;
+}
 
-      /// Ajuste automático del ancho de las columnas
-      sheet.autoFitColumn(i + 1);
+Future<void> extractDataFromSchema(
+    Map<String, dynamic> schema,
+    List<Map<String, dynamic>> data,
+    Worksheet sheet,
+    Function(double) onProgress) async {
+  List<String> keys = [];
+  schema['properties'].forEach((key, value) {
+    keys.add(key);
+  });
+  await _cargaRowData(data, sheet, keys, onProgress);
+}
 
-      /// Ajuste automático del ancho de las filas
-      sheet.autoFitRow(i + 1);
+/// Esta función se encarga de cargar los datos en una hoja de cálculo de Excel.
+///
+/// Parámetros:
+/// - [data]: Una lista de mapas que contiene los datos a exportar.
+/// - [sheet]: La hoja de cálculo de Excel donde se escribirán los datos.
+/// - [keys]: Una lista de claves que define las columnas de datos a exportar.
+Future<void> _cargaRowData(List<Map<String, dynamic>> data, Worksheet sheet,
+    List<String> keys, Function(double) onProgress) async {
+  for (int i = 0; i < data.length; i++) {
+    var row = data[i];
+    for (int j = 0; j < keys.length; j++) {
+      var value = row[keys[j]];
+      sheet.getRangeByIndex(i + 2, j + 1).setValue(value);
+      sheet.getRangeByIndex(i + 2, j + 1).cellStyle.fontSize = 12;
+      sheet.getRangeByIndex(i + 2, j + 1).cellStyle.hAlign = HAlignType.left;
+      sheet.getRangeByIndex(i + 2, j + 1).cellStyle.fontName =
+          'Times New Roman';
     }
-    return listaEncabezados;
-  }
-
-  void extractDataFromSchema(Map<String, dynamic> schema,
-      List<Map<String, dynamic>> data, Worksheet sheet) {
-    List<String> keys = [];
-    schema['properties'].forEach((key, value) {
-      keys.add(key);
-    });
-    _cargaRowData(data, sheet, keys);
-  }
-
-  /// Esta función se encarga de cargar los datos en una hoja de cálculo de Excel.
-  ///
-  /// Parámetros:
-  /// - [data]: Una lista de mapas que contiene los datos a exportar.
-  /// - [sheet]: La hoja de cálculo de Excel donde se escribirán los datos.
-  /// - [keys]: Una lista de claves que define las columnas de datos a exportar.
-  void _cargaRowData(
-      List<Map<String, dynamic>> data, Worksheet sheet, List<String> keys) {
-    // Iterar a través de cada fila de datos en la lista `data`.
-    for (int i = 0; i < data.length; i++) {
-      // Obtener el mapa que representa la fila actual de datos.
-      var row = data[i];
-      // Iterar a través de cada clave en la lista `keys` para obtener los valores correspondientes.
-      for (int j = 0; j < keys.length; j++) {
-        // Obtener el valor correspondiente a la clave actual en la fila de datos.
-        var value = row[keys[j]];
-        // Verificar el tipo de dato del valor y asignarlo a la celda correspondiente en la hoja de cálculo.
-        if (value is String) {
-          sheet.getRangeByIndex(i + 2, j + 1).setText(value);
-        } else if (value is int) {
-          sheet.getRangeByIndex(i + 2, j + 1).setNumber(value.toDouble());
-        } else {
-          sheet.getRangeByIndex(i + 2, j + 1).setText(value.toString());
-        }
-      }
+    if (i % 100 == 0) {
+      // Actualiza el progreso cada 100 filas
+      onProgress(i / data.length);
+      await Future.delayed(
+          const Duration(milliseconds: 10)); // Permite que la UI se actualice
     }
   }
+  // Asegurarse de que el progreso sea 100% al final
+  onProgress(1.0);
+}
 
-  void generaArchivoExcel(List<Map<String, dynamic>> data, String fileName, Map<String, dynamic> schema, List<String> listaEncabezados) {
-    // Se crea una instancia de la clase Workbook
-    final Workbook workbook = Workbook();
+Future<void> generaArchivoExcel(
+    {required List<Map<String, dynamic>> data,
+    required String fileName,
+    required Map<String, dynamic> schema,
+    required List<String> listaEncabezados,
+    required Function(double) onProgress}) async {
+  final Workbook workbook = Workbook();
+  final Worksheet sheet = workbook.worksheets[0];
 
-    final Worksheet sheet = workbook.worksheets[0];
+  // Agragar encabezados
+  extractHeadersFromSchema(
+      schema: schema,
+      sheet: sheet,
+      listaEncabezados: listaEncabezados,
+      workbook: workbook);
 
-    // Agragar encabezados
-    extractHeadersFromSchema(schema, sheet, listaEncabezados);
+  // Agregar datos
+  await extractDataFromSchema(schema, data, sheet, onProgress);
 
-    // Agregar datos
-    extractDataFromSchema(schema, data, sheet);
+  // Guardar el archivo
+  final List<int> bytes = workbook.saveAsStream();
+  workbook.dispose();
 
-    // Guardar el archivo
-    final List<int> bytes = workbook.saveAsStream();
-    workbook.dispose();
-
-    GuardarExcel.saveFile(Uint8List.fromList(bytes), '$fileName.xlsx');
-  }
+  GuardarExcel.saveFile(Uint8List.fromList(bytes), '$fileName.xlsx');
+}
