@@ -25,7 +25,7 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
   double progress = 0.0;
 
   // Lista de datos
-  List<Map<String, dynamic>> listData = Results().generateData(5000);
+  List<Map<String, dynamic>> listData = Results().generateData(10000);
 
   // Nombre del archivo
   String fileName = "archivo_excel_prueba";

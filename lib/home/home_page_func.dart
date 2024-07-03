@@ -10,15 +10,14 @@ List<String> extractHeadersFromSchema(
   for (int i = 0; i < listaEncabezados.length; i++) {
     sheet.getRangeByIndex(1, i + 1).setValue(listaEncabezados[i]);
 
-    sheet.getRangeByIndex(1, i + 1).cellStyle.bold = true;
-    sheet.getRangeByIndex(1, i + 1).cellStyle.fontSize = 14;
-    sheet.getRangeByIndex(1, i + 1).cellStyle.fontName = 'Times New Roman';
+    /// Establece el estilo de las columnas
+    sheet.getRangeByIndex(1, i + 1).cellStyle
+      ..fontName = 'Times New Roman'
+      ..fontSize = 16
+      ..bold = true;
 
     /// Ajuste automático del ancho de las columnas
     sheet.autoFitColumn(i + 1);
-
-    /// Ajuste automático del ancho de las filas
-    sheet.autoFitRow(i + 1);
   }
   return listaEncabezados;
 }
@@ -51,13 +50,13 @@ Future<void> _cargaRowData(List<Map<String, dynamic>> data, Worksheet sheet,
       // agrega el valor a la celda
       sheet.getRangeByIndex(i + 2, j + 1).setValue(value);
 
-      // Establece el estilo de la celda
-      sheet.getRangeByIndex(i + 2, j + 1).cellStyle.fontSize = 12;
-      sheet.getRangeByIndex(i + 2, j + 1).cellStyle.hAlign = HAlignType.left;
-      sheet.getRangeByIndex(i + 2, j + 1).cellStyle.fontName =
-          'Times New Roman';
+      // Establece el estilo de las filas
+      sheet.getRangeByIndex(i + 2, j + 1).cellStyle
+        ..fontSize = 12
+        ..hAlign = HAlignType.left
+        ..fontName = 'Arial';
     }
-    
+
     if (i % 100 == 0) {
       // Actualiza el progreso cada 100 filas
       onProgress(i / data.length);
@@ -79,6 +78,9 @@ Future<void> generaArchivoExcel(
   final Workbook workbook = Workbook();
   final Worksheet sheet = workbook.worksheets[0];
 
+  // Personalizar la hoja de cálculo
+  sheet.pageSetup.paperSize = ExcelPaperSize.paperA4;
+
   // Agragar encabezados
   extractHeadersFromSchema(
       schema: schema, sheet: sheet, listaEncabezados: listaEncabezados);
@@ -88,7 +90,7 @@ Future<void> generaArchivoExcel(
       schema: schema, data: data, sheet: sheet, onProgress: onProgress);
 
   // Guardar el archivo
-  final List<int> bytes = workbook.saveAsStream();
+  final List<int> bytes = await workbook.save();
   workbook.dispose();
 
   GuardarExcel.saveFile(Uint8List.fromList(bytes), '$fileName.xlsx');
