@@ -3,8 +3,7 @@ part of 'home_page.dart';
 List<String> extractHeadersFromSchema(
     {required Map<String, dynamic> schema,
     required Worksheet sheet,
-    required List<String> listaEncabezados,
-    required Workbook workbook}) {
+    required List<String> listaEncabezados}) {
   schema['properties'].forEach((key, value) {
     listaEncabezados.add(value['label'] ?? key);
   });
@@ -25,10 +24,10 @@ List<String> extractHeadersFromSchema(
 }
 
 Future<void> extractDataFromSchema(
-    Map<String, dynamic> schema,
-    List<Map<String, dynamic>> data,
-    Worksheet sheet,
-    Function(double) onProgress) async {
+    {required Map<String, dynamic> schema,
+    required List<Map<String, dynamic>> data,
+    required Worksheet sheet,
+    required Function(double) onProgress}) async {
   List<String> keys = [];
   schema['properties'].forEach((key, value) {
     keys.add(key);
@@ -48,12 +47,17 @@ Future<void> _cargaRowData(List<Map<String, dynamic>> data, Worksheet sheet,
     var row = data[i];
     for (int j = 0; j < keys.length; j++) {
       var value = row[keys[j]];
+
+      // agrega el valor a la celda
       sheet.getRangeByIndex(i + 2, j + 1).setValue(value);
+
+      // Establece el estilo de la celda
       sheet.getRangeByIndex(i + 2, j + 1).cellStyle.fontSize = 12;
       sheet.getRangeByIndex(i + 2, j + 1).cellStyle.hAlign = HAlignType.left;
       sheet.getRangeByIndex(i + 2, j + 1).cellStyle.fontName =
           'Times New Roman';
     }
+    
     if (i % 100 == 0) {
       // Actualiza el progreso cada 100 filas
       onProgress(i / data.length);
@@ -71,18 +75,17 @@ Future<void> generaArchivoExcel(
     required Map<String, dynamic> schema,
     required List<String> listaEncabezados,
     required Function(double) onProgress}) async {
+  // Crear un nuevo libro de trabajo y una hoja de cálculo
   final Workbook workbook = Workbook();
   final Worksheet sheet = workbook.worksheets[0];
 
   // Agragar encabezados
   extractHeadersFromSchema(
-      schema: schema,
-      sheet: sheet,
-      listaEncabezados: listaEncabezados,
-      workbook: workbook);
+      schema: schema, sheet: sheet, listaEncabezados: listaEncabezados);
 
   // Agregar datos
-  await extractDataFromSchema(schema, data, sheet, onProgress);
+  await extractDataFromSchema(
+      schema: schema, data: data, sheet: sheet, onProgress: onProgress);
 
   // Guardar el archivo
   final List<int> bytes = workbook.saveAsStream();

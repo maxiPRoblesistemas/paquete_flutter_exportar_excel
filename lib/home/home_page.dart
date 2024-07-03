@@ -30,14 +30,21 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
   // Nombre del archivo
   String fileName = "archivo_excel_prueba";
 
+
+  /// Esta función gestiona el estado de la exportación,
+  /// actualiza la interfaz de usuario para mostrar el progreso, 
+  /// y se asegura de que la exportación de datos se ejecute en segundo plano 
+  /// sin bloquear la interfaz de usuario principal.
   Future<void> _exportData(List<Map<String, dynamic>> data, String fileName,
       Map<String, dynamic> schema, List<String> listaEncabezados) async {
+    // Actualiza el estado del widget para indicar que la exportación ha comenzado.
     setState(() {
       isExporting = true;
       progress = 0.0;
     });
 
-    // Convertimos la función generaArchivoExcel a asincrónica
+    // Llama a la función `generaArchivoExcel`, que ahora es asincrónica, para exportar los datos.
+    // La función `await` se asegura de que este código espere a que `generaArchivoExcel` termine antes de continuar.
     await generaArchivoExcel(
         data: data,
         fileName: fileName,
@@ -48,7 +55,7 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
             progress = value;
           });
         });
-
+    // Actualiza el estado del widget para indicar que la exportación ha terminado.
     setState(() {
       isExporting = false;
     });
