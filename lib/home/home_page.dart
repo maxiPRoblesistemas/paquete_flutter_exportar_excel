@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:paquete_syncfusion_exportar_excel/home/results.dart';
 import 'package:paquete_syncfusion_exportar_excel/home/web_save_excel.dart';
-import 'package:syncfusion_flutter_xlsio/xlsio.dart';
+import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
 import 'dart:typed_data';
+
+import 'package:view_ui_flutter/widgets/textfield/textfield_widget.dart';
 
 part 'home_page_func.dart';
 
@@ -30,10 +33,9 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
   // Nombre del archivo
   String fileName = "archivo_excel_prueba";
 
-
   /// Esta función gestiona el estado de la exportación,
-  /// actualiza la interfaz de usuario para mostrar el progreso, 
-  /// y se asegura de que la exportación de datos se ejecute en segundo plano 
+  /// actualiza la interfaz de usuario para mostrar el progreso,
+  /// y se asegura de que la exportación de datos se ejecute en segundo plano
   /// sin bloquear la interfaz de usuario principal.
   Future<void> _exportData(List<Map<String, dynamic>> data, String fileName,
       Map<String, dynamic> schema, List<String> listaEncabezados) async {
@@ -69,9 +71,43 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
     );
   }
 
-  Center _buildBodyPlaceholder() {
-    return Center(
-      child: _buildExportButton(),
+  LayoutBuilder _buildBodyPlaceholder() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ConstrainedBox(
+          constraints: constraints,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildFiltroDatosPorFecha(),
+              _buildExportButton(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Padding _buildFiltroDatosPorFecha() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextfieldWidget.fecha(
+              labelTitulo: 'Desde',
+              onSubmitted: (p0) {},
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: TextfieldWidget.fecha(
+              labelTitulo: 'Hasta',
+              onSubmitted: (p0) {},
+            ),
+          ),
+        ],
+      ),
     );
   }
 

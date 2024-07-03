@@ -2,7 +2,7 @@ part of 'home_page.dart';
 
 List<String> extractHeadersFromSchema(
     {required Map<String, dynamic> schema,
-    required Worksheet sheet,
+    required xlsio.Worksheet sheet,
     required List<String> listaEncabezados}) {
   schema['properties'].forEach((key, value) {
     listaEncabezados.add(value['label'] ?? key);
@@ -17,7 +17,7 @@ List<String> extractHeadersFromSchema(
       ..bold = true;
 
     /// Ajuste automático del ancho de las columnas
-    sheet.autoFitColumn(i + 1);
+    // sheet.autoFitColumn(i + 1);
   }
   return listaEncabezados;
 }
@@ -25,7 +25,7 @@ List<String> extractHeadersFromSchema(
 Future<void> extractDataFromSchema(
     {required Map<String, dynamic> schema,
     required List<Map<String, dynamic>> data,
-    required Worksheet sheet,
+    required xlsio.Worksheet sheet,
     required Function(double) onProgress}) async {
   List<String> keys = [];
   schema['properties'].forEach((key, value) {
@@ -40,8 +40,11 @@ Future<void> extractDataFromSchema(
 /// - [data]: Una lista de mapas que contiene los datos a exportar.
 /// - [sheet]: La hoja de cálculo de Excel donde se escribirán los datos.
 /// - [keys]: Una lista de claves que define las columnas de datos a exportar.
-Future<void> _cargaRowData(List<Map<String, dynamic>> data, Worksheet sheet,
-    List<String> keys, Function(double) onProgress) async {
+Future<void> _cargaRowData(
+    List<Map<String, dynamic>> data,
+    xlsio.Worksheet sheet,
+    List<String> keys,
+    Function(double) onProgress) async {
   for (int i = 0; i < data.length; i++) {
     var row = data[i];
     for (int j = 0; j < keys.length; j++) {
@@ -53,8 +56,10 @@ Future<void> _cargaRowData(List<Map<String, dynamic>> data, Worksheet sheet,
       // Establece el estilo de las filas
       sheet.getRangeByIndex(i + 2, j + 1).cellStyle
         ..fontSize = 12
-        ..hAlign = HAlignType.left
+        ..hAlign = xlsio.HAlignType.left
         ..fontName = 'Arial';
+
+      sheet.autoFitRow(j + 1);
     }
 
     if (i % 100 == 0) {
@@ -75,11 +80,11 @@ Future<void> generaArchivoExcel(
     required List<String> listaEncabezados,
     required Function(double) onProgress}) async {
   // Crear un nuevo libro de trabajo y una hoja de cálculo
-  final Workbook workbook = Workbook();
-  final Worksheet sheet = workbook.worksheets[0];
+  final xlsio.Workbook workbook = xlsio.Workbook();
+  final xlsio.Worksheet sheet = workbook.worksheets[0];
 
   // Personalizar la hoja de cálculo
-  sheet.pageSetup.paperSize = ExcelPaperSize.paperA4;
+  sheet.pageSetup.paperSize = xlsio.ExcelPaperSize.paperA4;
 
   // Agragar encabezados
   extractHeadersFromSchema(
