@@ -47,7 +47,7 @@ class Results {
         "latitud": "-34.6037",
         "longitud": "-58.3816",
         "codigoAfip": 12345,
-        "creadoEl": "2024-06-01"
+        "creadoEl": "2024-06-22"
       },
       {
         "idPais": "BRA",
@@ -55,7 +55,7 @@ class Results {
         "latitud": "-15.8267",
         "longitud": "-47.9218",
         "codigoAfip": 67890,
-        "creadoEl": "2024-06-02"
+        "creadoEl": "2024-07-22"
       },
       {
         "idPais": "PRY",
@@ -63,7 +63,7 @@ class Results {
         "latitud": "-15.8263",
         "longitud": "-47.9222",
         "codigoAfip": 64158,
-        "creadoEl": "2024-06-28"
+        "creadoEl": "2024-08-22"
       }
     ];
 

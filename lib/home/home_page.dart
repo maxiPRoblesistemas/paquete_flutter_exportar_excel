@@ -1,5 +1,6 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:paquete_syncfusion_exportar_excel/home/results.dart';
 import 'package:paquete_syncfusion_exportar_excel/home/web_save_excel.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
@@ -32,6 +33,9 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
 
   // Nombre del archivo
   String fileName = "archivo_excel_prueba";
+
+  TextEditingController controllerDesde = TextEditingController();
+  TextEditingController controllerHasta = TextEditingController();
 
   /// Esta función gestiona el estado de la exportación,
   /// actualiza la interfaz de usuario para mostrar el progreso,
@@ -96,14 +100,26 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
           Expanded(
             child: TextfieldWidget.fecha(
               labelTitulo: 'Desde',
-              onSubmitted: (p0) {},
+              controller: controllerDesde,
+              onSubmitted: (p0) {
+                log('VALOR DESDE:>>>> $p0');
+                setState(() {
+                  controllerDesde.text = p0;
+                });
+              },
             ),
           ),
           const SizedBox(width: 20),
           Expanded(
             child: TextfieldWidget.fecha(
               labelTitulo: 'Hasta',
-              onSubmitted: (p0) {},
+              controller: controllerHasta,
+              onSubmitted: (p0) {
+                log('VALOR HASTA:>>>> $p0');
+                setState(() {
+                  controllerHasta.text = p0;
+                });
+              },
             ),
           ),
         ],
@@ -127,7 +143,13 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
   FilledButton _buildExportButton() {
     return FilledButton(
         child: const Text('Exportar'),
-        onPressed: () =>
-            _exportData(listData, fileName, schema, listaEncabezados));
+        onPressed: () => _exportData(
+            buildListaDatosFiltrados(
+                listData,
+                formateaFechaSelectores(controllerDesde.text),
+                formateaFechaSelectores(controllerHasta.text)),
+            fileName,
+            schema,
+            listaEncabezados));
   }
 }

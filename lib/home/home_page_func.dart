@@ -1,5 +1,36 @@
 part of 'home_page.dart';
 
+String formateaFechaSelectores(String fecha) {
+  String nuevaFecha = '';
+  try {
+    if (fecha.isNotEmpty && fecha.length < 12) {
+      nuevaFecha =
+          '${fecha.substring(6, 10)}-${fecha.substring(3, 5)}-${fecha.substring(0, 2)}';
+      log('nueva fecha formateada: $nuevaFecha');
+    }
+  } catch (e) {
+    return 'error: $e';
+  }
+  return nuevaFecha;
+}
+
+List<Map<String, dynamic>> buildListaDatosFiltrados(
+    List<Map<String, dynamic>> data, String fechaDesde, String fechaHasta) {
+  List<Map<String, dynamic>> listaDatosFiltrados = [];
+
+  DateTime desde = DateTime.parse(fechaDesde);
+  DateTime hasta = DateTime.parse(fechaHasta);
+
+  listaDatosFiltrados = data.where((element) {
+    DateTime fecha = DateTime.parse(element['creadoEl']);
+    return fecha.isAfter(desde) && fecha.isBefore(hasta) ||
+        fecha.isAtSameMomentAs(desde) ||
+        fecha.isAtSameMomentAs(hasta);
+  }).toList();
+
+  return listaDatosFiltrados;
+}
+
 List<String> extractHeadersFromSchema(
     {required Map<String, dynamic> schema,
     required xlsio.Worksheet sheet,
@@ -17,7 +48,7 @@ List<String> extractHeadersFromSchema(
       ..bold = true;
 
     /// Ajuste automático del ancho de las columnas
-    // sheet.autoFitColumn(i + 1);
+    sheet.autoFitColumn(i + 1);
   }
   return listaEncabezados;
 }
