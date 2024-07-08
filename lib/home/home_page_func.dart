@@ -92,6 +92,7 @@ Future<void> _cargaRowData(
         ..fontSize = 12
         ..hAlign = xlsio.HAlignType.left
         ..fontName = 'Arial';
+      sheet.autoFitColumn(j + 1);
     }
 
     if (i % 100 == 0) {
@@ -103,6 +104,24 @@ Future<void> _cargaRowData(
   }
   // Asegurarse de que el progreso sea 100% al final
   onProgress(1.0);
+}
+
+void totalizadores(List<Map<String, dynamic>> data, xlsio.Worksheet sheet,
+    List<String> listaEncabezados) {
+  int totalRow = data.length + 2;
+  sheet.getRangeByIndex(totalRow, 1).setText('Total de registros:');
+  sheet.getRangeByIndex(totalRow, 2).setNumber(obtenerTotalRegistros(data));
+
+  for (var column = 0; column < listaEncabezados.length; column++) {
+    sheet.getRangeByIndex(totalRow, column + 1).cellStyle
+      ..fontSize = 12
+      ..bold = true;
+    sheet.autoFitColumn(column + 1);
+  }
+}
+
+double obtenerTotalRegistros(List<Map<String, dynamic>> data) {
+  return data.length.toDouble();
 }
 
 Future<void> generaArchivoExcel(
@@ -125,6 +144,9 @@ Future<void> generaArchivoExcel(
   // Agregar datos
   await extractDataFromSchema(
       schema: schema, data: data, sheet: sheet, onProgress: onProgress);
+
+  // Agregar totalizadores
+  totalizadores(data, sheet, listaEncabezados);
 
   // Guardar el archivo
   final List<int> bytes = await workbook.save();

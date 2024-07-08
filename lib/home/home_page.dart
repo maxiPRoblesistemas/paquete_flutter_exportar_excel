@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:paquete_syncfusion_exportar_excel/home/results.dart';
 import 'package:paquete_syncfusion_exportar_excel/home/web_save_excel.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
+import 'package:syncfusion_officechart/officechart.dart';
 import 'dart:typed_data';
 
 import 'package:view_ui_flutter/widgets/textfield/textfield_widget.dart';
@@ -84,7 +85,7 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildFiltroDatosPorFecha(),
-              _buildExportButton(),
+              _buildExportButton(context: context),
             ],
           ),
         );
@@ -140,16 +141,18 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
                   )),
       );
 
-  FilledButton _buildExportButton() {
+  FilledButton _buildExportButton({required BuildContext context}) {
     return FilledButton(
         child: const Text('Exportar'),
-        onPressed: () => _exportData(
-            buildListaDatosFiltrados(
-                listData,
-                formateaFechaSelectores(controllerDesde.text),
-                formateaFechaSelectores(controllerHasta.text)),
-            fileName,
-            schema,
-            listaEncabezados));
+        onPressed: () {
+          _exportData(
+              buildListaDatosFiltrados(
+                  listData,
+                  formateaFechaSelectores(controllerDesde.text),
+                  formateaFechaSelectores(controllerHasta.text)),
+              fileName,
+              schema,
+              listaEncabezados);
+        });
   }
 }
