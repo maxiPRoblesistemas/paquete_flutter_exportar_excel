@@ -30,7 +30,7 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
   double progress = 0.0;
 
   // Lista de datos
-  List<Map<String, dynamic>> listData = Results().generateData(3000);
+  List<Map<String, dynamic>> listData = Results().baseData;
 
   // Nombre del archivo
   String fileName = "archivo_excel_prueba";
@@ -146,10 +146,11 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
         child: const Text('Exportar'),
         onPressed: () {
           _exportData(
-              buildListaDatosFiltrados(
-                  listData,
-                  formateaFechaSelectores(controllerDesde.text),
-                  formateaFechaSelectores(controllerHasta.text)),
+              listData,
+              // buildListaDatosFiltrados(
+              //     listData,
+              //     formateaFechaSelectores(controllerDesde.text),
+              //     formateaFechaSelectores(controllerHasta.text)),
               fileName,
               schema,
               listaEncabezados);

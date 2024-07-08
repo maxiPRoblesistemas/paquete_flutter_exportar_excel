@@ -106,6 +106,7 @@ Future<void> _cargaRowData(
   onProgress(1.0);
 }
 
+/// Totalizadores
 void totalizadores(List<Map<String, dynamic>> data, xlsio.Worksheet sheet,
     List<String> listaEncabezados) {
   int totalRow = data.length + 2;
@@ -122,6 +123,23 @@ void totalizadores(List<Map<String, dynamic>> data, xlsio.Worksheet sheet,
 
 double obtenerTotalRegistros(List<Map<String, dynamic>> data) {
   return data.length.toDouble();
+}
+
+void buildGraficoEnExcel(
+    {required List<Map<String, dynamic>> data,
+    required xlsio.Worksheet sheet,
+    required List<String> listaEncabezados}) {
+  final ChartCollection charts = ChartCollection(sheet);
+  final Chart chart = charts.add();
+  chart.chartType = ExcelChartType.bar;
+
+  for (var i = 0; i < data.length; i++) {
+    for (var j = 0; j < listaEncabezados.length; j++) {
+      chart.dataRange = sheet.getRangeByIndex(i + 2, 1);
+      chart.isSeriesInRows = false;
+    }
+  }
+  sheet.charts = charts;
 }
 
 Future<void> generaArchivoExcel(
@@ -147,6 +165,10 @@ Future<void> generaArchivoExcel(
 
   // Agregar totalizadores
   totalizadores(data, sheet, listaEncabezados);
+
+  // Agregar gráfico
+  buildGraficoEnExcel(
+      data: data, sheet: sheet, listaEncabezados: listaEncabezados);
 
   // Guardar el archivo
   final List<int> bytes = await workbook.save();
