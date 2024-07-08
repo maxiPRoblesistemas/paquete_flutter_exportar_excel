@@ -18,14 +18,16 @@ List<Map<String, dynamic>> buildListaDatosFiltrados(
     List<Map<String, dynamic>> data, String fechaDesde, String fechaHasta) {
   List<Map<String, dynamic>> listaDatosFiltrados = [];
 
-  DateTime desde = DateTime.parse(fechaDesde);
-  DateTime hasta = DateTime.parse(fechaHasta);
+  String fechaSinEspaciosDesde = fechaDesde.replaceAll('-', '');
+  String fechaSinEspaciosHasta = fechaHasta.replaceAll('-', '');
 
-  listaDatosFiltrados = data.where((element) {
-    DateTime fecha = DateTime.parse(element['creadoEl']);
-    return fecha.isAfter(desde) && fecha.isBefore(hasta) ||
-        fecha.isAtSameMomentAs(desde) ||
-        fecha.isAtSameMomentAs(hasta);
+  int desde = int.parse(fechaSinEspaciosDesde);
+  int hasta = int.parse(fechaSinEspaciosHasta);
+
+  listaDatosFiltrados = data.where((item) {
+    String fechaSinEspacios = item['creadoEl'].replaceAll('-', '');
+    int fechaFiltro = int.parse(fechaSinEspacios);
+    return fechaFiltro >= desde && fechaFiltro <= hasta;
   }).toList();
 
   return listaDatosFiltrados;
@@ -35,6 +37,7 @@ List<String> extractHeadersFromSchema(
     {required Map<String, dynamic> schema,
     required xlsio.Worksheet sheet,
     required List<String> listaEncabezados}) {
+  listaEncabezados.clear();
   schema['properties'].forEach((key, value) {
     listaEncabezados.add(value['label'] ?? key);
   });
@@ -89,8 +92,6 @@ Future<void> _cargaRowData(
         ..fontSize = 12
         ..hAlign = xlsio.HAlignType.left
         ..fontName = 'Arial';
-
-      sheet.autoFitRow(j + 1);
     }
 
     if (i % 100 == 0) {

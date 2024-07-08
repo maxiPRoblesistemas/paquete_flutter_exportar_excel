@@ -29,7 +29,7 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
   double progress = 0.0;
 
   // Lista de datos
-  List<Map<String, dynamic>> listData = Results().generateData(10000);
+  List<Map<String, dynamic>> listData = Results().generateData(3000);
 
   // Nombre del archivo
   String fileName = "archivo_excel_prueba";
@@ -102,7 +102,7 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
               labelTitulo: 'Desde',
               controller: controllerDesde,
               onSubmitted: (p0) {
-                log('VALOR DESDE:>>>> $p0');
+                log('VALOR TEXTFIELD DESDE:>>>> $p0');
                 setState(() {
                   controllerDesde.text = p0;
                 });
@@ -115,7 +115,7 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
               labelTitulo: 'Hasta',
               controller: controllerHasta,
               onSubmitted: (p0) {
-                log('VALOR HASTA:>>>> $p0');
+                log('VALOR TEXTFIELD HASTA:>>>> $p0');
                 setState(() {
                   controllerHasta.text = p0;
                 });

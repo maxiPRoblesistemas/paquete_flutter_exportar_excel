@@ -64,7 +64,23 @@ class Results {
         "longitud": "-47.9222",
         "codigoAfip": 64158,
         "creadoEl": "2024-08-22"
-      }
+      },
+      {
+        "idPais": "BOL",
+        "descripcion": "Bolivia",
+        "latitud": "-15.8264",
+        "longitud": "-47.9227",
+        "codigoAfip": 64159,
+        "creadoEl": "2024-12-22"
+      },
+      {
+        "idPais": "VEN",
+        "descripcion": "Venezuela",
+        "latitud": "-15.8266",
+        "longitud": "-47.9229",
+        "codigoAfip": 64164,
+        "creadoEl": "2024-11-05"
+      },
     ];
 
     List<Map<String, dynamic>> largeData = [];
