@@ -59,13 +59,12 @@ List<String> extractHeadersFromSchema(
 Future<void> extractDataFromSchema(
     {required Map<String, dynamic> schema,
     required List<Map<String, dynamic>> data,
-    required xlsio.Worksheet sheet,
-    required Function(double) onProgress}) async {
+    required xlsio.Worksheet sheet}) async {
   List<String> keys = [];
   schema['properties'].forEach((key, value) {
     keys.add(key);
   });
-  await _cargaRowData(data, sheet, keys, onProgress);
+  await _cargaRowData(data, sheet, keys);
 }
 
 /// Esta función se encarga de cargar los datos en una hoja de cálculo de Excel.
@@ -74,11 +73,8 @@ Future<void> extractDataFromSchema(
 /// - [data]: Una lista de mapas que contiene los datos a exportar.
 /// - [sheet]: La hoja de cálculo de Excel donde se escribirán los datos.
 /// - [keys]: Una lista de claves que define las columnas de datos a exportar.
-Future<void> _cargaRowData(
-    List<Map<String, dynamic>> data,
-    xlsio.Worksheet sheet,
-    List<String> keys,
-    Function(double) onProgress) async {
+Future<void> _cargaRowData(List<Map<String, dynamic>> data,
+    xlsio.Worksheet sheet, List<String> keys) async {
   for (int i = 0; i < data.length; i++) {
     var row = data[i];
     for (int j = 0; j < keys.length; j++) {
@@ -94,21 +90,14 @@ Future<void> _cargaRowData(
         ..fontName = 'Arial';
       sheet.autoFitColumn(j + 1);
     }
-
-    if (i % 100 == 0) {
-      // Actualiza el progreso cada 100 filas
-      onProgress(i / data.length);
-      await Future.delayed(
-          const Duration(milliseconds: 10)); // Permite que la UI se actualice
-    }
   }
-  // Asegurarse de que el progreso sea 100% al final
-  onProgress(1.0);
 }
 
 /// Totalizadores
-void totalizadores(List<Map<String, dynamic>> data, xlsio.Worksheet sheet,
-    List<String> listaEncabezados) {
+void totalizadores(
+    {required List<Map<String, dynamic>> data,
+    required xlsio.Worksheet sheet,
+    required List<String> listaEncabezados}) {
   int totalRow = data.length + 2;
   sheet.getRangeByIndex(totalRow, 1).setText('Total de registros:');
   sheet.getRangeByIndex(totalRow, 2).setNumber(obtenerTotalRegistros(data));
@@ -146,11 +135,19 @@ Future<void> generaArchivoExcel(
     {required List<Map<String, dynamic>> data,
     required String fileName,
     required Map<String, dynamic> schema,
-    required List<String> listaEncabezados,
-    required Function(double) onProgress}) async {
+    required List<String> listaEncabezados}) async {
   // Crear un nuevo libro de trabajo y una hoja de cálculo
   final xlsio.Workbook workbook = xlsio.Workbook();
+
+  /// se hace referencia a la hoja n°1  [hoja 1]
   final xlsio.Worksheet sheet = workbook.worksheets[0];
+  sheet.name = 'Hoja1';
+
+  /// se hace referencia a la hoja n°2 [hoja 2]
+  final xlsio.Worksheet sheet2 = workbook.worksheets.addWithName('Hoja2');
+
+  /// se hace referencia a la hoja n°3 [hoja 3]
+  final xlsio.Worksheet sheet3 = workbook.worksheets.addWithName('Hoja3');
 
   // Personalizar la hoja de cálculo
   sheet.pageSetup.paperSize = xlsio.ExcelPaperSize.paperA4;
@@ -160,15 +157,14 @@ Future<void> generaArchivoExcel(
       schema: schema, sheet: sheet, listaEncabezados: listaEncabezados);
 
   // Agregar datos
-  await extractDataFromSchema(
-      schema: schema, data: data, sheet: sheet, onProgress: onProgress);
+  await extractDataFromSchema(schema: schema, data: data, sheet: sheet);
 
   // Agregar totalizadores
-  totalizadores(data, sheet, listaEncabezados);
+  totalizadores(data: data, sheet: sheet3, listaEncabezados: listaEncabezados);
 
   // Agregar gráfico
   buildGraficoEnExcel(
-      data: data, sheet: sheet, listaEncabezados: listaEncabezados);
+      data: data, sheet: sheet2, listaEncabezados: listaEncabezados);
 
   // Guardar el archivo
   final List<int> bytes = await workbook.save();
