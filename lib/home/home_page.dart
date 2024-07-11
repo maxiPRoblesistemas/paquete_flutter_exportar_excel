@@ -104,12 +104,22 @@ class _ExportarDatosToExcelState extends State<ExportarDatosToExcel> {
     return FilledButton(
         child: const Text('Exportar'),
         onPressed: () {
-          generaArchivoExcel(
-            fileName: fileName,
-            schema: schema,
-            listaEncabezados: listaEncabezados,
-            data: listData,
-          );
+          if (controllerDesde.text.isEmpty || controllerHasta.text.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Debe seleccionar un rango de fechas'),
+              ),
+            );
+          } else {
+            generaArchivoExcel(
+                fileName: fileName,
+                schema: schema,
+                listaEncabezados: listaEncabezados,
+                data: buildListaDatosFiltrados(
+                    listData,
+                    formateaFechaSelectores(controllerDesde.text),
+                    formateaFechaSelectores(controllerHasta.text)));
+          }
         });
   }
 }

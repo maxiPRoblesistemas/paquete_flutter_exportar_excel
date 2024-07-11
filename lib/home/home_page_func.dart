@@ -47,8 +47,8 @@ List<String> extractHeadersFromSchema(
     /// Establece el estilo de las columnas
     sheet.getRangeByIndex(1, i + 1).cellStyle
       ..fontName = 'Times New Roman'
-      ..fontSize = 16
-      ..bold = true;
+      ..fontSize = 12
+      ..backColor = '#D9D9D9';
 
     /// Ajuste automático del ancho de las columnas
     sheet.autoFitColumn(i + 1);
@@ -56,15 +56,15 @@ List<String> extractHeadersFromSchema(
   return listaEncabezados;
 }
 
-Future<void> extractDataFromSchema(
+void extractDataFromSchema(
     {required Map<String, dynamic> schema,
     required List<Map<String, dynamic>> data,
-    required xlsio.Worksheet sheet}) async {
+    required xlsio.Worksheet sheet}) {
   List<String> keys = [];
   schema['properties'].forEach((key, value) {
     keys.add(key);
   });
-  await _cargaRowData(data, sheet, keys);
+  _cargaRowData(data, sheet, keys);
 }
 
 /// Esta función se encarga de cargar los datos en una hoja de cálculo de Excel.
@@ -73,8 +73,8 @@ Future<void> extractDataFromSchema(
 /// - [data]: Una lista de mapas que contiene los datos a exportar.
 /// - [sheet]: La hoja de cálculo de Excel donde se escribirán los datos.
 /// - [keys]: Una lista de claves que define las columnas de datos a exportar.
-Future<void> _cargaRowData(List<Map<String, dynamic>> data,
-    xlsio.Worksheet sheet, List<String> keys) async {
+void _cargaRowData(
+    List<Map<String, dynamic>> data, xlsio.Worksheet sheet, List<String> keys) {
   for (int i = 0; i < data.length; i++) {
     var row = data[i];
     for (int j = 0; j < keys.length; j++) {
@@ -88,7 +88,6 @@ Future<void> _cargaRowData(List<Map<String, dynamic>> data,
         ..fontSize = 12
         ..hAlign = xlsio.HAlignType.left
         ..fontName = 'Arial';
-      sheet.autoFitColumn(j + 1);
     }
   }
 }
@@ -128,6 +127,14 @@ void buildGraficoEnExcel(
       chart.isSeriesInRows = false;
     }
   }
+
+  final ChartSerie serie = chart.series[0];
+  serie.dataLabels.isValue = true;
+  serie.dataLabels.isCategoryName = true;
+  serie.dataLabels.isSeriesName = true;
+  serie.dataLabels.textArea.size = 14;
+  serie.dataLabels.textArea.fontName = 'Arial';
+
   sheet.charts = charts;
 }
 
@@ -144,10 +151,10 @@ Future<void> generaArchivoExcel(
   sheet.name = 'Hoja1';
 
   /// se hace referencia a la hoja n°2 [hoja 2]
-  final xlsio.Worksheet sheet2 = workbook.worksheets.addWithName('Hoja2');
+  // final xlsio.Worksheet sheet2 = workbook.worksheets.addWithName('Hoja2');
 
   /// se hace referencia a la hoja n°3 [hoja 3]
-  final xlsio.Worksheet sheet3 = workbook.worksheets.addWithName('Hoja3');
+  // final xlsio.Worksheet sheet3 = workbook.worksheets.addWithName('Hoja3');
 
   // Personalizar la hoja de cálculo
   sheet.pageSetup.paperSize = xlsio.ExcelPaperSize.paperA4;
@@ -157,14 +164,14 @@ Future<void> generaArchivoExcel(
       schema: schema, sheet: sheet, listaEncabezados: listaEncabezados);
 
   // Agregar datos
-  await extractDataFromSchema(schema: schema, data: data, sheet: sheet);
-
-  // Agregar totalizadores
-  totalizadores(data: data, sheet: sheet3, listaEncabezados: listaEncabezados);
+  extractDataFromSchema(schema: schema, data: data, sheet: sheet);
 
   // Agregar gráfico
-  buildGraficoEnExcel(
-      data: data, sheet: sheet2, listaEncabezados: listaEncabezados);
+  // buildGraficoEnExcel(
+  //     data: data, sheet: sheet2, listaEncabezados: listaEncabezados);
+
+  // Agregar totalizadores
+  // totalizadores(data: data, sheet: sheet3, listaEncabezados: listaEncabezados);
 
   // Guardar el archivo
   final List<int> bytes = await workbook.save();
