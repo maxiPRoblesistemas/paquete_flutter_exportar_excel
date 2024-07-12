@@ -56,6 +56,43 @@ List<String> extractHeadersFromSchema(
   return listaEncabezados;
 }
 
+Map<String, dynamic> calculateTotalsAndAverages(
+    Map<String, dynamic> schema, List<Map<String, dynamic>> data) {
+  Map<String, double> totals = {};
+  Map<String, double> averages = {};
+  Map<String, int> counts = {};
+
+  schema['properties'].forEach((key, value) {
+    if ((value['totalizador'] == true && value['sumar'] == true) ||
+        value['porcentajes'] == true) {
+      totals[key] = 0;
+      counts[key] = 0;
+    }
+  });
+
+  for (var item in data) {
+    schema['properties'].forEach((key, value) {
+      if ((value['totalizador'] == true && value['sumar'] == true) ||
+          value['porcentajes'] == true) {
+        double? numValue = double.tryParse(item[key]?.toString() ?? '');
+        if (numValue != null) {
+          totals[key] = (totals[key] ?? 0) + numValue;
+          counts[key] = (counts[key] ?? 0) + 1;
+        }
+      }
+    });
+  }
+
+  totals.forEach((key, total) {
+    averages[key] = total / (counts[key] ?? 1);
+  });
+
+  return {
+    'totals': totals,
+    'averages': averages,
+  };
+}
+
 void extractDataFromSchema(
     {required Map<String, dynamic> schema,
     required List<Map<String, dynamic>> data,
@@ -90,27 +127,6 @@ void _cargaRowData(
         ..fontName = 'Arial';
     }
   }
-}
-
-/// Totalizadores
-void totalizadores(
-    {required List<Map<String, dynamic>> data,
-    required xlsio.Worksheet sheet,
-    required List<String> listaEncabezados}) {
-  int totalRow = data.length + 2;
-  sheet.getRangeByIndex(totalRow, 1).setText('Total de registros:');
-  sheet.getRangeByIndex(totalRow, 2).setNumber(obtenerTotalRegistros(data));
-
-  for (var column = 0; column < listaEncabezados.length; column++) {
-    sheet.getRangeByIndex(totalRow, column + 1).cellStyle
-      ..fontSize = 12
-      ..bold = true;
-    sheet.autoFitColumn(column + 1);
-  }
-}
-
-double obtenerTotalRegistros(List<Map<String, dynamic>> data) {
-  return data.length.toDouble();
 }
 
 void buildGraficoEnExcel(
@@ -159,6 +175,32 @@ Future<void> generaArchivoExcel(
   // Personalizar la hoja de cálculo
   sheet.pageSetup.paperSize = xlsio.ExcelPaperSize.paperA4;
 
+  String? totalizerColumn;
+  String? relatedColumn;
+
+  // Identificar la columna con totalizador y su campo relacionado
+  schema['properties'].forEach((key, value) {
+    if (value['totalizador'] == true && value['sumar'] == true) {
+      totalizerColumn = key;
+      relatedColumn = value['relacion'];
+    }
+  });
+
+  // Ordenar los datos por el campo relacionado
+  if (relatedColumn != null) {
+    data.sort((a, b) => a[relatedColumn].compareTo(b[relatedColumn]));
+  }
+
+  // Agrupar los datos por el campo relacionado
+  Map<String, List<Map<String, dynamic>>> groupedData = {};
+  for (var item in data) {
+    String groupKey = item[relatedColumn].toString();
+    if (!groupedData.containsKey(groupKey)) {
+      groupedData[groupKey] = [];
+    }
+    groupedData[groupKey]!.add(item);
+  }
+
   // Agragar encabezados
   extractHeadersFromSchema(
       schema: schema, sheet: sheet, listaEncabezados: listaEncabezados);
@@ -169,9 +211,6 @@ Future<void> generaArchivoExcel(
   // Agregar gráfico
   // buildGraficoEnExcel(
   //     data: data, sheet: sheet2, listaEncabezados: listaEncabezados);
-
-  // Agregar totalizadores
-  // totalizadores(data: data, sheet: sheet3, listaEncabezados: listaEncabezados);
 
   // Guardar el archivo
   final List<int> bytes = await workbook.save();
